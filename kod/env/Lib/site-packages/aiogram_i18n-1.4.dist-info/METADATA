@@ -1,0 +1,114 @@
+Metadata-Version: 2.3
+Name: aiogram_i18n
+Version: 1.4
+Summary: small translation tools for aiogram
+Project-URL: Repository, https://github.com/aiogram/aiogram_i18n
+Author: RootShinobi
+License: MIT License
+Keywords: aiogram,api,asyncio,bot,fluent,framework,gnutext,i18n,telegram,wrapper
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Typing :: Typed
+Requires-Python: >=3.8
+Requires-Dist: aiogram>=3.0.0b8
+Requires-Dist: click~=8.1.0
+Provides-Extra: compiler
+Requires-Dist: fluent-compiler~=1.0; extra == 'compiler'
+Provides-Extra: dev
+Requires-Dist: black~=23.12.0; extra == 'dev'
+Requires-Dist: mypy~=1.8.0; extra == 'dev'
+Requires-Dist: packaging~=23.0; extra == 'dev'
+Requires-Dist: pre-commit~=3.3.3; extra == 'dev'
+Requires-Dist: ruff~=0.1.13; extra == 'dev'
+Provides-Extra: docs
+Requires-Dist: furo~=2023.9.10; extra == 'docs'
+Requires-Dist: sphinx-autobuild~=2021.3.14; extra == 'docs'
+Requires-Dist: sphinx~=7.2.6; extra == 'docs'
+Provides-Extra: runtime
+Requires-Dist: fluent-runtime~=0.4.0; extra == 'runtime'
+Provides-Extra: test
+Requires-Dist: fluent-compiler~=1.0; extra == 'test'
+Requires-Dist: fluent-runtime~=0.4.0; extra == 'test'
+Requires-Dist: libcst~=1.0.1; extra == 'test'
+Requires-Dist: pytest-asyncio~=0.21.1; extra == 'test'
+Requires-Dist: pytest-cov~=4.0.0; extra == 'test'
+Requires-Dist: pytest-lazy-fixture~=0.6.3; extra == 'test'
+Requires-Dist: pytest~=7.4.0; extra == 'test'
+Description-Content-Type: text/markdown
+
+# aiogram_i18n
+
+Installation:
+```pip install aiogram_i18n```
+
+To use FluentCompileCore:
+```pip install fluent_compiler```
+
+To use FluentRuntimeCore:
+```pip install fluent.runtime```
+
+```python
+import asyncio
+from contextlib import suppress
+from logging import basicConfig, INFO
+from typing import Any
+
+from aiogram import Router, Dispatcher, F, Bot
+from aiogram.enums import ParseMode
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+
+from aiogram_i18n import I18nContext, LazyProxy, I18nMiddleware, LazyFilter
+from aiogram_i18n.cores.fluent_runtime_core import FluentRuntimeCore
+from aiogram_i18n.types import (
+    ReplyKeyboardMarkup, KeyboardButton
+    # you should import mutable objects from here if you want to use LazyProxy in them
+)
+
+router = Router(name=__name__)
+rkb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text=LazyProxy("help"))]  # or L.help()
+    ], resize_keyboard=True
+)
+
+
+@router.message(CommandStart())
+async def cmd_start(message: Message, i18n: I18nContext) -> Any:
+    name = message.from_user.mention_html()
+    return message.reply(
+        text=i18n.get("hello", user=name),  # or i18n.hello(user=name)
+        reply_markup=rkb
+    )
+
+
+@router.message(LazyFilter("help"))  # or LazyProxy("help") or F.text == LazyProxy("help")
+async def cmd_help(message: Message) -> Any:
+    return message.reply(text="-- " + message.text + " --")
+
+
+async def main() -> None:
+    basicConfig(level=INFO)
+    bot = Bot("42:ABC", parse_mode=ParseMode.HTML)
+    i18n_middleware = I18nMiddleware(
+        core=FluentRuntimeCore(
+            path="locales/{locale}/LC_MESSAGES"
+        )
+    )
+
+    dp = Dispatcher()
+    dp.include_router(router)
+    i18n_middleware.setup(dispatcher=dp)
+
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    with suppress(KeyboardInterrupt):
+        asyncio.run(main())
+```

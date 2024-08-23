@@ -1,0 +1,2 @@
+[console_scripts]
+i18n = aiogram_i18n.__main__:main
