@@ -20,6 +20,15 @@ button2 = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text="Telfon raqamni yuborish📱",request_contact= True)  
+        ],[
+            KeyboardButton(text="Bosh menu 🏠")
         ]
     ]
 )
+button3= ReplyKeyboardMarkup(
+    resize_keyboard=True,
+    keyboard=[
+        [
+            KeyboardButton(text="Bosh menu 🏠")
+        ]
+    ])
