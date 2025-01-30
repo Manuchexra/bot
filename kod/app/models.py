@@ -11,9 +11,8 @@ class BotUsers(models.Model):
     phone = models.CharField(
         max_length=20,
         validators=[RegexValidator(r'^\+?\d{10,15}$', 'Enter a valid phone number')],
-        blank=True,  # Allow blank if not always required
-        null=True    # Allow null if not always required
-    )
+        blank=True,  
+        null=True   )
 
     def __str__(self) -> str:
         return f"{self.first_name}"

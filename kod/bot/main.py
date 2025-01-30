@@ -2,7 +2,7 @@ from dotenv import find_dotenv, load_dotenv
 import os
 
 load_dotenv(find_dotenv())
-TOKEN = os.getenv("TOKEN")
+TOKEN = "7913141290:AAFH3uUIp0iqMIL1Yn3dHUQPpO00LJ0DWB0"
 
 import asyncio
 import logging
